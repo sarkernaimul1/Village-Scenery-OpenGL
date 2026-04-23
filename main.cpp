@@ -3,7 +3,6 @@
 #include <GL/glut.h>
 #include <cmath>
 
-// Global variables for movement and animations
 float cloud1X = -0.7f, cloud2X = 0.2f, cloud3X = -1.1f;
 float birdX = -1.1f, wingAngle = 0.0f;
 float boat1X = -0.5f, boat2X = 0.6f;
@@ -12,8 +11,6 @@ bool sunGrow = true, wingDown = true;
 
 const float PI = 3.14159265f;
 
-// DDA Line Drawing
-// Using DDA to get clean lines for house frames and boat masts
 void drawLineDDA(float x1, float y1, float x2, float y2)
 {
     float dx = x2 - x1, dy = y2 - y1;
@@ -30,7 +27,6 @@ void drawLineDDA(float x1, float y1, float x2, float y2)
     glEnd();
 }
 
-// Basic function to draw filled circles for the sun, clouds, and heads
 void drawFilledCircle(float xc, float yc, float r)
 {
     glBegin(GL_POLYGON);
@@ -42,45 +38,82 @@ void drawFilledCircle(float xc, float yc, float r)
     glEnd();
 }
 
-//Bushes
+void drawMidpointCircle(float xc, float yc, float r)
+{
+    int ri = (int)(r * 1000);
+    int x = 0;
+    int y = ri;
+    int d = 1 - ri;
+    float scale = 1.0f / 1000.0f;
+
+    while (x <= y)
+    {
+        glBegin(GL_LINES);
+
+        glVertex2f(xc + x * scale, yc + y * scale);
+        glVertex2f(xc + x * scale, yc - y * scale);
+
+        glVertex2f(xc - x * scale, yc + y * scale);
+        glVertex2f(xc - x * scale, yc - y * scale);
+
+        glVertex2f(xc + y * scale, yc + x * scale);
+        glVertex2f(xc + y * scale, yc - x * scale);
+
+        glVertex2f(xc - y * scale, yc + x * scale);
+        glVertex2f(xc - y * scale, yc - x * scale);
+
+        glEnd();
+
+        if (d < 0)
+        {
+
+            d += 2 * x + 3;
+        }
+        else
+        {
+
+            d += 2 * (x - y) + 5;
+            y--;
+        }
+        x++;
+    }
+}
+
 void drawBush(float x, float y)
 {
-    glColor3f(0.0f, 0.4f, 0.0f); // Darker green for a natural look
+    glColor3f(0.0f, 0.4f, 0.0f);
     drawFilledCircle(x, y, 0.05f);
     drawFilledCircle(x + 0.04f, y + 0.02f, 0.06f);
     drawFilledCircle(x - 0.04f, y + 0.01f, 0.04f);
 }
 
 //Human Figure (Boatman)
-//faceRight flips the character and the oar based on boat direction
 void drawHuman(float x, float y, bool faceRight)
 {
     glPushMatrix();
     glTranslatef(x, y, 0.0f);
 
-    glColor3f(0.8f, 0.6f, 0.4f); // Skin tone color
+    glColor3f(0.8f, 0.6f, 0.4f);
     drawFilledCircle(0.0f, 0.08f, 0.022f); //Head
 
-    glColor3f(0.0f, 0.0f, 0.0f); //Body
+    glColor3f(0.0f, 0.0f, 0.0f);
     glLineWidth(2.0f);
     drawLineDDA(0.0f, 0.06f, 0.0f, 0.0f);
 
     if (faceRight)
     {
-        drawLineDDA(0.0f, 0.04f, 0.05f, 0.03f); //Right arm
-        glColor3f(0.4f, 0.2f, 0.0f); //Oar color
-        drawLineDDA(0.04f, 0.05f, 0.08f, -0.04f); //Oar
+        drawLineDDA(0.0f, 0.04f, 0.05f, 0.03f);
+        glColor3f(0.4f, 0.2f, 0.0f);
+        drawLineDDA(0.04f, 0.05f, 0.08f, -0.04f);
     }
     else
     {
-        drawLineDDA(0.0f, 0.04f, -0.05f, 0.03f); //Left arm
+        drawLineDDA(0.0f, 0.04f, -0.05f, 0.03f);
         glColor3f(0.4f, 0.2f, 0.0f);
-        drawLineDDA(-0.04f, 0.05f, -0.08f, -0.04f); //Left oar
+        drawLineDDA(-0.04f, 0.05f, -0.08f, -0.04f);
     }
     glPopMatrix();
 }
-
-// Environment Elements
 
 void drawSun()
 {
@@ -88,7 +121,7 @@ void drawSun()
     glTranslatef(0.75f, 0.85f, 0.0f);
     glScalef(sunScale, sunScale, 1.0f); // Pulse effect animation
     glColor3f(1.0f, 0.9f, 0.0f);
-    drawFilledCircle(0.0f, 0.0f, 0.12f);
+    drawMidpointCircle(0.0f, 0.0f, 0.12f);
     glPopMatrix();
 }
 
@@ -110,7 +143,7 @@ void drawHouse(float x, float y, float r, float g, float b, float s)
     glTranslatef(x, y, 0.0f);
     glScalef(s, s, 1.0f);
 
-    glColor3f(0.9f, 0.85f, 0.75f); //Wall color
+    glColor3f(0.9f, 0.85f, 0.75f);
     glBegin(GL_QUADS);
     glVertex2f(0.0f, 0.0f);
     glVertex2f(0.2f, 0.0f);
@@ -118,14 +151,14 @@ void drawHouse(float x, float y, float r, float g, float b, float s)
     glVertex2f(0.0f, 0.15f);
     glEnd();
 
-    glColor3f(r, g, b); //Roof color passed via parameters
+    glColor3f(r, g, b);
     glBegin(GL_TRIANGLES);
     glVertex2f(-0.03f, 0.15f);
     glVertex2f(0.23f, 0.15f);
     glVertex2f(0.1f, 0.28f);
     glEnd();
 
-    glColor3f(0.2f, 0.1f, 0.0f); //Simple door
+    glColor3f(0.2f, 0.1f, 0.0f);
     glBegin(GL_QUADS);
     glVertex2f(0.07f, 0.0f);
     glVertex2f(0.13f, 0.0f);
@@ -141,7 +174,7 @@ void drawTree(float x, float y, float s)
     glTranslatef(x, y, 0.0f);
     glScalef(s, s, 1.0f);
 
-    glColor3f(0.4f, 0.2f, 0.1f); //Trunk
+    glColor3f(0.4f, 0.2f, 0.1f);
     glBegin(GL_QUADS);
     glVertex2f(-0.015f, 0.0f);
     glVertex2f(0.015f, 0.0f);
@@ -149,7 +182,7 @@ void drawTree(float x, float y, float s)
     glVertex2f(-0.01f, 0.18f);
     glEnd();
 
-    glColor3f(0.1f, 0.55f, 0.1f); //Leaves
+    glColor3f(0.1f, 0.55f, 0.1f);
     drawFilledCircle(0.0f, 0.22f, 0.08f);
     drawFilledCircle(-0.06f, 0.18f, 0.06f);
     drawFilledCircle(0.06f, 0.18f, 0.06f);
@@ -162,7 +195,7 @@ void drawSailBoat(float bX, float bY, float s, bool movingRight)
     glTranslatef(bX, bY, 0.0f);
     glScalef(s, s, 1.0f);
 
-    glColor3f(0.35f, 0.15f, 0.05f); //Hull
+    glColor3f(0.35f, 0.15f, 0.05f);
     glBegin(GL_POLYGON);
     glVertex2f(-0.15f, 0.0f);
     glVertex2f(0.15f, 0.0f);
@@ -170,14 +203,13 @@ void drawSailBoat(float bX, float bY, float s, bool movingRight)
     glVertex2f(-0.18f, 0.07f);
     glEnd();
 
-    //Position boatman
     if (movingRight) drawHuman(-0.13f, 0.07f, true);
     else drawHuman(0.13f, 0.07f, false);
 
-    glColor3f(0.2f, 0.1f, 0.0f); //Mast
+    glColor3f(0.2f, 0.1f, 0.0f);
     drawLineDDA(0.0f, 0.07f, 0.0f, 0.3f);
 
-    glColor3f(1.0f, 1.0f, 1.0f); //Sail
+    glColor3f(1.0f, 1.0f, 1.0f);
     glBegin(GL_TRIANGLES);
     if(movingRight)
     {
@@ -202,7 +234,6 @@ void drawBird(float ox, float oy)
     glColor3f(0.0f, 0.0f, 0.0f);
     glLineWidth(1.5f);
 
-    // Animate the wings moving up and down
     glPushMatrix();
     glRotatef(wingAngle, 0, 0, 1);
     drawLineDDA(0, 0, -0.06, 0.03);
@@ -222,7 +253,6 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
 
-    //Sky with a slight gradient effect
     glBegin(GL_QUADS);
     glColor3f(0.4f, 0.7f, 1.0f);
     glVertex2f(-1.0, 1.0);
@@ -234,12 +264,10 @@ void display()
 
     drawSun();
 
-    //Moving clouds
     drawCloud(cloud1X, 0.78f, 1.0f);
     drawCloud(cloud2X, 0.68f, 0.8f);
     drawCloud(cloud3X, 0.84f, 0.7f);
 
-    //Grass ground
     glColor3f(0.25f, 0.75f, 0.25f);
     glBegin(GL_QUADS);
     glVertex2f(-1.0, -0.2);
@@ -248,7 +276,6 @@ void display()
     glVertex2f(-1.0, -0.65);
     glEnd();
 
-    //Road
     glColor3f(0.55f, 0.40f, 0.25f);
     glBegin(GL_QUAD_STRIP);
     float roadWidth = 0.15f;
@@ -260,19 +287,16 @@ void display()
     }
     glEnd();
 
-    //Bushes along the road
     drawBush(-0.25f, -0.35f);
     drawBush(0.35f, -0.55f);
     drawBush(0.75f, -0.62f);
 
-    //road curve
     glPushMatrix();
     glTranslatef(0.18f, -0.25f, 0.0f);
     glScalef(0.7f, 0.7f, 1.0f);
     drawBush(0, 0);
     glPopMatrix();
 
-    //Houses and trees
     drawTree(-0.95f, -0.32f, 1.0f);
     drawHouse(-0.85f, -0.52f, 0.7f, 0.1f, 0.1f, 1.0f);
     drawTree(-0.62f, -0.28f, 0.75f);
@@ -284,7 +308,6 @@ void display()
     drawHouse(0.78f, -0.52f, 0.1f, 0.5f, 0.2f, 1.0f);
     drawTree(0.98f, -0.32f, 1.0f);
 
-    // Layer 7: River
     glColor3f(0.0f, 0.45f, 0.8f);
     glBegin(GL_QUADS);
     glVertex2f(-1.0, -0.65);
@@ -293,11 +316,9 @@ void display()
     glVertex2f(-1.0, -1.0);
     glEnd();
 
-    //Boats moving horizontally
     drawSailBoat(boat1X, -0.82f, 1.1f, true);
     drawSailBoat(boat2X, -0.94f, 0.9f, false);
 
-    //Birds with wing animation
     drawBird(0, 0);
     drawBird(0.2f, 0.05f);
     drawBird(-0.2f, 0.1f);
@@ -305,10 +326,9 @@ void display()
     glutSwapBuffers();
 }
 
-// Animation Controller (Timer)
+// Animation Controller
 void timer(int val)
 {
-    //Move clouds and loop them back when they exit the screen
     cloud1X += 0.001f;
     if (cloud1X > 1.3f) cloud1X = -1.3f;
     cloud2X += 0.0008f;
@@ -316,7 +336,6 @@ void timer(int val)
     cloud3X += 0.0014f;
     if (cloud3X > 1.3f) cloud3X = -1.3f;
 
-    //Update bird and boat positions
     birdX += 0.0045f;
     if (birdX > 1.3f) birdX = -1.3f;
     boat1X += 0.0025f;
@@ -324,7 +343,6 @@ void timer(int val)
     boat2X -= 0.002f;
     if (boat2X < -1.3f) boat2X = 1.3f;
 
-    //Toggle wing rotation for the flapping effect
     if (wingDown)
     {
         wingAngle += 9.0f;
@@ -336,7 +354,6 @@ void timer(int val)
         if (wingAngle < -35.0f) wingDown = true;
     }
 
-    //Handle sun growing and shrinking (Pulse)
     if (sunGrow)
     {
         sunScale += 0.001f;
@@ -348,9 +365,8 @@ void timer(int val)
         if (sunScale < 0.95f) sunGrow = true;
     }
 
-    //Trigger frame refresh
     glutPostRedisplay();
-    glutTimerFunc(16, timer, 0); // targeting 60 FPS
+    glutTimerFunc(16, timer, 0);
 }
 
 //Main Function
